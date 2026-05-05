@@ -56,14 +56,15 @@ class GetLocationG:
         try:
             response = requests.get(f'https://ipinfo.io/{self.ip}/json', timeout=10)
             data = response.json()
+            loc = data.get("loc") or ","
             self.location = {
                 "IP": data.get("ip"),
                 "Region": data.get("region"),
                 "City": data.get("city"),
                 "Country": data.get("country"),
                 "ISP": data.get("org"),
-                "Latitude": data.get("loc").split(',')[0],
-                "Longitude": data.get("loc").split(',')[1]
+                "Latitude": loc.split(',')[0],
+                "Longitude": loc.split(',')[1]
             }
             return self.location
         except Exception as e:
